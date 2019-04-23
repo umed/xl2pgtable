@@ -1,0 +1,21 @@
+version: "3"
+services:
+  dbviewer:
+    image: jainishshah17/docker-dbeaver
+    entrypoint: dbeaver
+    network_mode: "host"
+    volumes:
+      - $HOME/.Xauthority:/root/.Xauthority
+    environment:
+      - DISPLAY=unix$DISPLAY
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - dbeaver_home:/root
+  db:
+    image: postgres
+    network_mode: "host"
+    environment:
+      - POSTGRES_PASSWORD=pswd
+
+volumes:
+  dbeaver_home:
