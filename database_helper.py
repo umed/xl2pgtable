@@ -11,26 +11,29 @@ from database_settings import DatabaseSettings
 import datetime as dt
 
 
-def __NULL_if_None_else_str(value):
-    return
+def __str_or_NULL(value):
+    if value is not None:
+        return str(value)
+    else:
+        return 'NULL'
 
 
 PG_SQL_TYPES_TO_PYTHON_TYPES = {
     int: {
         'type': 'integer',
-        'converter': lambda value: str(value) if value is not None else 'NULL'
+        'converter': lambda value: __str_or_NULL(value)
     },
     float: {
         'type': 'real',
-        'converter': lambda value: str(value) if value is not None else 'NULL'
+        'converter': lambda value: __str_or_NULL(value)
     },
     str: {
         'type': 'varchar',
-        'converter': lambda value: "'{}'".format(value) if value is not None else 'NULL'
+        'converter': lambda value: "'{}'".format(__str_or_NULL(value))
     },
     dt.time: {
         'type': 'time',
-        'converter': lambda value: "'{}'".format(value)
+        'converter': lambda value: "'{}'".format(__str_or_NULL(value))
     },
     dt.datetime: {
         'type': 'timestamp',
