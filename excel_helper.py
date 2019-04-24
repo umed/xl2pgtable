@@ -5,11 +5,15 @@ Created on Sun Apr 21 14:09:51 2019
 @author: PuchkovaKS
 """
 
-import pandas as pd
-import logging
 import datetime as dt
-import xlrd
+import logging
 import os
+
+import pandas as pd
+import xlrd
+
+import utils
+
 
 def get_type(value) -> type:
     for converter_type, converter in TYPE_CONVERTERS.items():
@@ -17,8 +21,9 @@ def get_type(value) -> type:
             converter(value)
             return converter_type
         except Exception:
-            pass
+            continue
     return str
+
 
 def key_types_of_plain_dict(d: dict) -> dict:
     result = {}
@@ -27,10 +32,10 @@ def key_types_of_plain_dict(d: dict) -> dict:
     return result
 
 
-def __get_cols_indecies_to_skip(df: pd.DataFrame) -> list:
+def __get_cols_indexes_to_skip(df: pd.DataFrame) -> list:
     (_, row_values) = next(df.iterrows())
     for cols_number_to_skip, value in enumerate(row_values):
-        if value is not None:
+        if not pd.isna(value):
             break
     if cols_number_to_skip == len(row_values):
         logging.error('Cannot handle file. Probably, it is empty')
@@ -39,15 +44,16 @@ def __get_cols_indecies_to_skip(df: pd.DataFrame) -> list:
 
 
 def __read_excel(file_path: str) -> dict:
-    # read file without marking first row as header
     df = pd.read_excel(file_path, header=None)
-    df = df.dropna(how='all')
-    # replace empty value of cells by None instead of NaN
-    df = df.where(pd.notnull(df), None)
+    df.dropna(how='all', inplace=True)
     # shift table if data are not placed in the first row/column
-    cols_indecies_to_skip = __get_cols_indecies_to_skip(df)
-    df = df.drop(df.columns[cols_indecies_to_skip], axis=1)
-    df = df.rename(columns=df.iloc[0]).drop(df.index[0])
+    cols_indexes_to_skip = __get_cols_indexes_to_skip(df)
+    df.drop(df.columns[cols_indexes_to_skip], axis=1, inplace=True)
+    # first row as columns names
+    df.fillna('NULL', inplace=True)
+    df.rename(columns=df.iloc[0], inplace=True)
+    df.drop(df.index[0], inplace=True)
+    df.columns = utils.create_adopted_columns_names(df.columns)
     return df.to_dict('records')
 
 
@@ -68,18 +74,21 @@ def is_excel_file(file_path: str) -> bool:
         return False
 
 
-def get_excel_files_in_dir(path: str, exclude: list) -> list:
-    def only_excel_file(file_path):
+def get_excel_files_in_dir(dir_path: str, exclude: list) -> list:
+    def is_acceptable_file(file_path):
         return is_excel_file(file_path) and \
-                os.path.basename(file_path) not in exclude
-    return list(filter(only_excel_file, os.listdir(path)))
+               os.path.basename(file_path) not in exclude
+
+    files = [os.path.join(dir_path, file_name) for file_name in os.listdir(dir_path)]
+    return [f for f in files if is_acceptable_file(f)]
 
 
 TYPE_CONVERTERS = {
     int: int,
     float: float,
-    dt.time: lambda value: dt.datetime.strptime(value, '%H:%M:%S').time(),
-    dt.date: lambda value: dt.datetime.strptime(value, '%d.%m.%Y').date(),
-    dt.datetime: lambda value: dt.datetime.strptime(value, '%d.%m.%Y %H:%M:%S'),
+    dt.time: lambda value: value if type(value) == dt.time else dt.datetime.strptime(value, '%H:%M:%S').time(),
+    dt.date: lambda value: value if type(value) == dt.date else dt.datetime.strptime(value, '%d.%m.%Y').date(),
+    dt.datetime: lambda value: value if type(value) == dt.datetime else dt.datetime.strptime(value,
+                                                                                             '%d.%m.%Y %H:%M:%S'),
     str: str,
 }

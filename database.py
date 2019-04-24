@@ -1,0 +1,69 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Apr 21 14:09:51 2019
+
+@author: PuchkovaKS
+"""
+
+import logging
+
+import psycopg2 as pg
+
+from database_utils import py_type_to_pg_type, py_value_to_pg_value
+from database_settings import DatabaseSettings
+
+
+class Database(object):
+    def __init__(self, settings: DatabaseSettings):
+        self._settings = settings
+
+    def execute(self, command: str):
+        try:
+            connection = pg.connect(**dict(self._settings))
+            cursor = connection.cursor()
+            cursor.execute(command)
+            connection.commit()
+            cursor.close()
+            connection.close()
+        except Exception as e:
+            logging.error(
+                "Something goes wrong during SQL script execution: {}".format(str(e)))
+            exit(1)
+
+    @staticmethod
+    def __row_to_insert_str(columns: dict, row: dict) -> str:
+        values = ', '.join([py_value_to_pg_value(columns[key], value) for key, value in row.items()])
+        return '({})'.format(values)
+
+    @staticmethod
+    def __rows_to_insert_str(columns: dict, rows: list) -> str:
+        rows_to_insert_list = [Database.__row_to_insert_str(columns, row) for row in rows]
+        return ', '.join(rows_to_insert_list)
+
+    @staticmethod
+    def __create_insert_query(table_name: str, columns: dict, data: list) -> str:
+        rows_to_insert_str = Database.__rows_to_insert_str(columns, data)
+        return 'insert into {} values {}'.format(table_name, rows_to_insert_str)
+
+    def __create_table(self, name, columns: dict):
+        columns_definition_list = []
+        for column_name, column_type in columns.items():
+            column_definition = '{} {}'.format(column_name, py_type_to_pg_type(column_type))
+            columns_definition_list.append(column_definition)
+        columns_definition = ', '.join(columns_definition_list)
+        command = 'create table {} ({})'.format(name, columns_definition)
+        self.execute(command)
+
+    def __insert_rows(self, name: str, columns: dict, data: list):
+        insert_query = Database.__create_insert_query(
+            name, columns, data)
+        self.execute(insert_query)
+
+    def create_table(self, name: str, columns: dict, data: list):
+        self.__create_table(name, columns)
+        self.__insert_rows(name, columns, data)
+
+    def rewrite_data(self, table_name: str, columns: dict, data: list):
+        command_to_drop_table = 'DROP TABLE IF EXISTS {};'.format(table_name)
+        self.execute(command_to_drop_table)
+        self.create_table(table_name, columns, data)

@@ -5,6 +5,7 @@ Created on Sun Apr 21 14:09:51 2019
 @author: PuchkovaKS
 """
 
+
 class DatabaseSettings:
     user = "postgres"
     password = "pswd"
@@ -17,5 +18,3 @@ class DatabaseSettings:
         yield "host", self.host
         yield "user", self.user
         yield "password", self.password
-
-# settings = DatabaseSettings()
