@@ -37,7 +37,7 @@ def py_value_to_pg_value(value_type, value) -> str:
 
 PG_SQL_TYPES_TO_PYTHON_TYPES = {
     int: {
-        'type': 'integer',
+        'type': 'numeric',
         'converter': lambda value: null_or_format_str(value, '{}')
     },
     float: {
