@@ -17,7 +17,7 @@ from utils import create_table_name
 
 # REPLACE PATH BY YOUR PATH TO EXCEL FILES
 # use double slashes on windows
-PATH_TO_FOLDER_WITH_EXCEL_FILES = '/home/umed/Desktop/test_dir1/'
+PATH_TO_FOLDER_WITH_EXCEL_FILES = '/home/uabdumum/Documents'
 
 
 TABLE_NAME = 'table_name'

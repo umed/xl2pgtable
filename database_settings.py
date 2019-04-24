@@ -9,9 +9,9 @@ Created on Sun Apr 21 14:09:51 2019
 class DatabaseSettings:
     user = "postgres"
     password = "pswd"
-    database = "postgres"
+    database = "dev"
     host = "172.17.0.1"
-    schema = "public"
+    schema = "tsob"
 
     def __iter__(self):
         yield "database", self.database
