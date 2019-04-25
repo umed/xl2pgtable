@@ -25,32 +25,40 @@ def get_type(value) -> type:
     return str
 
 
-def key_types_of_plain_dict(d: dict) -> dict:
-    result = {}
-    for key, value in d.items():
-        result[key] = get_type(value)
-    return result
+def rows_item_types(rows: list) -> dict:
+    if len(rows) == 0:
+        return {}
+    item_types = {}
+    for key in rows[0].keys():
+        for row in rows:
+            value = row[key]
+            if value != utils.NULL:
+                item_types[key] = get_type(value)
+                break
+    return item_types
 
 
 def __get_cols_indexes_to_skip(df: pd.DataFrame) -> list:
     (_, row_values) = next(df.iterrows())
+    cols_number_to_skip = 0
     for cols_number_to_skip, value in enumerate(row_values):
         if not pd.isna(value):
             break
     if cols_number_to_skip == len(row_values):
-        logging.error('Cannot handle file. Probably, it is empty')
-        exit(1)
+        error_message = 'Cannot handle file. Probably, it is empty'
+        logging.error(error_message)
+        raise ValueError(error_message)
     return list(range(0, cols_number_to_skip))
 
 
-def __read_excel(file_path: str) -> dict:
+def __read_excel(file_path: str) -> list:
     df = pd.read_excel(file_path, header=None)
     df.dropna(how='all', inplace=True)
     # shift table if data are not placed in the first row/column
     cols_indexes_to_skip = __get_cols_indexes_to_skip(df)
     df.drop(df.columns[cols_indexes_to_skip], axis=1, inplace=True)
     # first row as columns names
-    df.fillna('NULL', inplace=True)
+    df.fillna(utils.NULL, inplace=True)
     df.rename(columns=df.iloc[0], inplace=True)
     df.drop(df.index[0], inplace=True)
     df.columns = utils.create_adopted_columns_names(df.columns)
@@ -59,11 +67,7 @@ def __read_excel(file_path: str) -> dict:
 
 def read_excel(file_path: str) -> tuple:
     sheet_data = __read_excel(file_path)
-    if len(sheet_data) > 0:
-        result = (key_types_of_plain_dict(sheet_data[0]), sheet_data)
-    else:
-        result = (dict(), sheet_data)
-    return result
+    return rows_item_types(sheet_data), sheet_data
 
 
 def is_excel_file(file_path: str) -> bool:

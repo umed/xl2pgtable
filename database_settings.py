@@ -9,7 +9,7 @@ Created on Sun Apr 21 14:09:51 2019
 class DatabaseSettings:
     user = "postgres"
     password = "pswd"
-    database = "dev"
+    database = "postgres"
     host = "172.17.0.1"
     schema = "tsob"
 

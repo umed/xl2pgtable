@@ -17,7 +17,7 @@ from utils import create_table_name
 
 # REPLACE PATH BY YOUR PATH TO EXCEL FILES
 # use double slashes on windows
-PATH_TO_FOLDER_WITH_EXCEL_FILES = '/home/uabdumum/Documents'
+PATH_TO_FOLDER_WITH_EXCEL_FILES = '/home/umed/Documents'
 
 
 TABLE_NAME = 'table_name'
@@ -46,7 +46,10 @@ def create_files_info(dir_name: str, exclude: list = None) -> list:
     files_info = []
     files = get_excel_files_in_dir(dir_name, exclude)
     for file_path in files:
-        files_info.append(create_file_info(file_path))
+        try:
+            files_info.append(create_file_info(file_path))
+        except ValueError:
+            print("Error happened during '{}' reading. Will be skipped.".format(file_path))
     return files_info
 
 

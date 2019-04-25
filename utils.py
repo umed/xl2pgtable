@@ -8,6 +8,8 @@ import os
 
 from transliterate import translit
 
+NULL = 'NULL'
+
 
 def transliterate(text: str) -> str:
     """Transliterate given text"""
