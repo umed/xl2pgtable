@@ -17,7 +17,7 @@ def convert_datetime_to_str(value, dt_format: str) -> str:
 
 
 def null_or_format_str(value, str_format: str):
-    if value == utils.NULL or value is None:
+    if value == utils.NULL or value is None or not value:
         return utils.NULL
     else:
         return str_format.format(str(value))
