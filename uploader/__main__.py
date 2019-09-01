@@ -9,11 +9,11 @@ import logging
 import os
 import sys
 
-from database import Database
-from database_settings import DatabaseSettings
-from excel_helper import get_excel_files_in_dir, read_excel
+from uploader.database import Database
+from uploader.database_settings import DatabaseSettings
+from uploader.excel_helper import get_excel_files_in_dir, read_excel
 
-from utils import create_table_name
+from uploader.utils import create_table_name
 
 # REPLACE PATH BY YOUR PATH TO EXCEL FILES
 # use double slashes on windows

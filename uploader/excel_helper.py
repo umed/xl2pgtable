@@ -12,7 +12,7 @@ import os
 import pandas as pd
 import xlrd
 
-import utils
+from uploader.utils import create_adopted_columns_names, NULL
 
 
 def get_type(value) -> type:
@@ -32,7 +32,7 @@ def rows_item_types(rows: list) -> dict:
     for key in rows[0].keys():
         for row in rows:
             value = row[key]
-            if value != utils.NULL:
+            if value != NULL:
                 item_types[key] = get_type(value)
                 break
     return item_types
@@ -58,10 +58,10 @@ def __read_excel(file_path: str) -> list:
     cols_indexes_to_skip = __get_cols_indexes_to_skip(df)
     df.drop(df.columns[cols_indexes_to_skip], axis=1, inplace=True)
     # first row as columns names
-    df.fillna(utils.NULL, inplace=True)
+    df.fillna(NULL, inplace=True)
     df.rename(columns=df.iloc[0], inplace=True)
     df.drop(df.index[0], inplace=True)
-    df.columns = utils.create_adopted_columns_names(df.columns)
+    df.columns = create_adopted_columns_names(df.columns)
     return df.to_dict('records')
 
 

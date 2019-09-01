@@ -10,8 +10,8 @@ class DatabaseSettings:
     user = "postgres"
     password = "pswd"
     database = "postgres"
-    host = "172.17.0.1"
-    schema = "tsob"
+    host = "127.0.0.1"
+    schema = "public"
 
     def __iter__(self):
         yield "database", self.database

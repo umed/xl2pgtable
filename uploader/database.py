@@ -9,8 +9,8 @@ import logging
 
 import psycopg2 as pg
 
-from database_utils import py_type_to_pg_type, py_value_to_pg_value
-from database_settings import DatabaseSettings
+from uploader.database_utils import py_type_to_pg_type, py_value_to_pg_value
+from uploader.database_settings import DatabaseSettings
 
 
 class Database(object):
@@ -58,6 +58,7 @@ class Database(object):
         insert_query = self.__create_insert_query(
             name, columns, data)
         self.execute(insert_query)
+        print('Rows inserted to table {}'.format(name))
 
     def create_table(self, name: str, columns: dict, data: list):
         self.__create_table(name, columns)

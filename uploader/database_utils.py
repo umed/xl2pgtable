@@ -6,7 +6,16 @@ Created on Sun Apr 21 14:09:51 2019
 """
 
 import datetime as dt
-import utils
+from uploader.utils import NULL
+
+
+__ESCAPE_SYMBOLS_MAPPING = {"'":  r"''"}
+
+
+def __escaped_symbols() -> dict:
+    if not hasattr(__escaped_symbols, 'translation'):
+        __escaped_symbols.translation = str.maketrans(__ESCAPE_SYMBOLS_MAPPING)
+    return __escaped_symbols.translation
 
 
 def convert_datetime_to_str(value, dt_format: str) -> str:
@@ -17,10 +26,10 @@ def convert_datetime_to_str(value, dt_format: str) -> str:
 
 
 def null_or_format_str(value, str_format: str):
-    if value == utils.NULL or value is None or not value:
-        return utils.NULL
+    if value == NULL or value is None or not value:
+        return NULL
     else:
-        return str_format.format(str(value))
+        return str_format.format(str(value).translate(__escaped_symbols()))
 
 
 def py_type_to_pg_type(py_type):
