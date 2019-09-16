@@ -1,4 +1,4 @@
-from uploader.database_utils import py_type_to_pg_type, py_value_to_pg_value
+from uploader.database.database_utils import py_type_to_pg_type
 from uploader.database import Database
 
 

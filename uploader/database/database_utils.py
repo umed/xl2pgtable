@@ -1,15 +1,7 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Apr 21 14:09:51 2019
-
-@author: PuchkovaKS
-"""
-
 import datetime as dt
 from uploader.utils import NULL
 
-
-__ESCAPE_SYMBOLS_MAPPING = {"'":  r"''"}
+__ESCAPE_SYMBOLS_MAPPING = {"'": r"''"}
 
 
 def __value_empty(value) -> bool:
@@ -41,7 +33,8 @@ def py_type_to_pg_type(py_type):
 
 
 def py_value_to_pg_value(value_type, value) -> str:
-    return PG_SQL_TYPES_TO_PYTHON_TYPES[value_type]['converter'](value)
+    current_type = value_type['type'] if type(value_type) is dict else value_type
+    return PG_SQL_TYPES_TO_PYTHON_TYPES[current_type]['converter'](value)
 
 
 # def datetime_to_null_or_str_format(value, dt_format, str_format):

@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Apr 21 14:09:51 2019
-
-@author: PuchkovaKS
-"""
 import os
 
 from transliterate import translit
@@ -17,7 +11,7 @@ def transliterate(text: str) -> str:
 
 
 def to_allowed_symbols(text: str) -> str:
-    result = ''.join([s for s in text if s.isalpha() or s == ' ' or s.isdigit()])
+    result = ''.join([s for s in text if s.isalpha() or s in [' ', '_'] or s.isdigit()])
     result = ' '.join(result.split())
     return result.replace(' ', '_')
 
@@ -26,9 +20,10 @@ def create_column_name(text: str) -> str:
     return to_allowed_symbols(text)
 
 
-def create_table_name(file_path: str) -> str:
+def create_table_name(file_path: str, department: str = None) -> str:
+    department_adopted = department + '_' if department else ''
     file_name_with_ext = os.path.basename(file_path)
-    file_name = os.path.splitext(file_name_with_ext)[0]
+    file_name = department_adopted + os.path.splitext(file_name_with_ext)[0]
     return transliterate(to_allowed_symbols(file_name))
 
 

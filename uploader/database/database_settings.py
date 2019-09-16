@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Apr 21 14:09:51 2019
-
-@author: PuchkovaKS
-"""
-
-
 class DatabaseSettings:
     user = "postgres"
     password = "pswd"

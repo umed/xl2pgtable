@@ -1,16 +1,9 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Apr 21 14:09:51 2019
-
-@author: PuchkovaKS
-"""
-
 import logging
 
 import psycopg2 as pg
 
-from uploader.database_utils import py_type_to_pg_type, py_value_to_pg_value
-from uploader.database_settings import DatabaseSettings
+from uploader.database.database_utils import py_type_to_pg_type, py_value_to_pg_value
+from uploader.database.database_settings import DatabaseSettings
 
 
 class Database(object):
@@ -46,17 +39,20 @@ class Database(object):
 
     def __create_table(self, name, columns: dict):
         columns_definition_list = []
-        for column_name, column_type in columns.items():
-            column_definition = '{} {}'.format(column_name, py_type_to_pg_type(column_type))
+        for column_key, column_value in columns.items():
+            column_mapping = column_value.get('mapping', None)
+            column_name = column_mapping['name'] if column_mapping else column_value['name']
+            column_type = column_mapping['type'] if column_mapping else py_type_to_pg_type(column_value['type'])
+            column_definition = '{} {}'.format(column_name, column_type)
             columns_definition_list.append(column_definition)
         columns_definition = ', '.join(columns_definition_list)
         command = 'create table {}.{} ({})'.format(self._settings.schema, name, columns_definition)
+        print(command)
         self.execute(command)
         print('Table "{}" was created/updated'.format(name))
 
     def __insert_rows(self, name: str, columns: dict, data: list):
-        insert_query = self.__create_insert_query(
-            name, columns, data)
+        insert_query = self.__create_insert_query(name, columns, data)
         self.execute(insert_query)
         print('Rows inserted to table {}'.format(name))
 

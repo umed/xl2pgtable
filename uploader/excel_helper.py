@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Apr 21 14:09:51 2019
-
-@author: PuchkovaKS
-"""
-
 import datetime as dt
 import logging
 import os
@@ -25,7 +18,7 @@ def get_type(value) -> type:
     return str
 
 
-def rows_item_types(rows: list) -> dict:
+def column_types(rows: list) -> dict:
     if len(rows) == 0:
         return {}
     item_types = {}
@@ -51,7 +44,13 @@ def __get_cols_indexes_to_skip(df: pd.DataFrame) -> list:
     return list(range(0, cols_number_to_skip))
 
 
-def __read_excel(file_path: str) -> list:
+def read_excel(file_path: str) -> list:
+    df = excel_to_data_frame(file_path)
+    df.columns = create_adopted_columns_names(df.columns)
+    return df.to_dict('records')
+
+
+def excel_to_data_frame(file_path) -> pd.DataFrame:
     df = pd.read_excel(file_path, header=None)
     df.dropna(how='all', inplace=True)
     # shift table if data are not placed in the first row/column
@@ -61,13 +60,11 @@ def __read_excel(file_path: str) -> list:
     df.fillna(NULL, inplace=True)
     df.rename(columns=df.iloc[0], inplace=True)
     df.drop(df.index[0], inplace=True)
-    df.columns = create_adopted_columns_names(df.columns)
-    return df.to_dict('records')
+    return df
 
 
-def read_excel(file_path: str) -> tuple:
-    sheet_data = __read_excel(file_path)
-    return rows_item_types(sheet_data), sheet_data
+def excel_to_list_of_dicts(file_path: str) -> list:
+    return excel_to_data_frame(file_path).to_dict('records')
 
 
 def is_excel_file(file_path: str) -> bool:

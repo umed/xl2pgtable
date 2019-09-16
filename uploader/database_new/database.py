@@ -1,5 +1,5 @@
 import psycopg2 as pg
-from uploader.database_settings import DatabaseSettings
+from uploader.database.database_settings import DatabaseSettings
 import logging
 
 
