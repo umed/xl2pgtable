@@ -1,27 +1,38 @@
 import logging
+import sys
+from typing import List
 
 import psycopg2 as pg
 
-from uploader.database.database_utils import py_type_to_pg_type, py_value_to_pg_value
 from uploader.database.database_settings import DatabaseSettings
+from uploader.database.database_utils import py_type_to_pg_type, py_value_to_pg_value
 
 
 class Database(object):
     def __init__(self, settings: DatabaseSettings):
         self._settings = settings
 
-    def execute(self, command: str):
+    def execute(self, command: str) -> List[tuple]:
+        connection = None
+        cursor = None
         try:
             connection = pg.connect(**dict(self._settings))
             cursor = connection.cursor()
             cursor.execute(command)
+            data = []
+            if cursor.statusmessage.startswith('SELECT '):
+                data = cursor.fetchall()
             connection.commit()
-            cursor.close()
-            connection.close()
+            return data
         except Exception as e:
             logging.error(
                 "Something goes wrong during SQL script execution: {}".format(str(e)))
-            exit(1)
+            sys.exit(1)
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
 
     @staticmethod
     def __row_to_insert_str(columns: dict, row: dict) -> str:
@@ -61,7 +72,17 @@ class Database(object):
         self.__create_table(name, columns)
         self.__insert_rows(name, columns, data)
 
-    def rewrite_data(self, table_name: str, columns: dict, data: list):
-        command_to_drop_table = 'DROP TABLE IF EXISTS {}.{};'.format(self._settings.schema, table_name)
-        self.execute(command_to_drop_table)
-        self.create_table(table_name, columns, data)
+    def rewrite_data(self, table_name: str, columns: dict, data: list, drop_if_exists: bool = False):
+        if drop_if_exists:
+            command_to_drop_table = 'DROP TABLE IF EXISTS {}.{};'.format(self._settings.schema, table_name)
+            self.execute(command_to_drop_table)
+            self.create_table(table_name, columns, data)
+        else:
+            command = "SELECT exists(SELECT 1 FROM information_schema.tables WHERE " \
+                      "table_schema = '{}' AND table_name = '{}')".format(self._settings.schema, table_name)
+            result = self.execute(command)
+            if len(result) > 0 and result[0]:
+                self.execute('TRUNCATE {}.{}'.format(self._settings.schema, table_name))
+                self.__insert_rows(table_name, columns, data)
+            else:
+                self.create_table(table_name, columns, data)
