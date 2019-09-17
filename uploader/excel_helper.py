@@ -28,6 +28,8 @@ def column_types(rows: list) -> dict:
             if value != NULL:
                 item_types[key] = get_type(value)
                 break
+        if key not in item_types:
+            item_types[key] = str
     return item_types
 
 
