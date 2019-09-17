@@ -41,8 +41,9 @@ class Database(object):
         columns_definition_list = []
         for column_key, column_value in columns.items():
             column_mapping = column_value.get('mapping', None)
-            column_name = column_mapping['name'] if column_mapping else column_value['name']
-            column_type = column_mapping['type'] if column_mapping else py_type_to_pg_type(column_value['type'])
+            column_name = column_mapping['name'] if column_mapping and column_mapping['name'] else column_value['name']
+            column_type = column_mapping['type'] if column_mapping and column_mapping['type'] else py_type_to_pg_type(
+                column_value['type'])
             column_definition = '{} {}'.format(column_name, column_type)
             columns_definition_list.append(column_definition)
         columns_definition = ', '.join(columns_definition_list)

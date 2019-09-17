@@ -2,7 +2,7 @@ from uploader.database.database import Database
 from uploader.excel_helper import column_types, excel_to_list_of_dicts
 from typing import List
 
-from uploader.utils import create_column_name
+from uploader.utils import create_column_name, NULL
 
 
 class FileUploader:
@@ -22,8 +22,8 @@ class FileUploader:
                     continue
                 d.update({
                     'mapping': {
-                        'name': mapping['Code'],
-                        'type': mapping['Data type'],
+                        'name': mapping['Code'] if mapping['Code'] != NULL else None,
+                        'type': mapping['Data type'] if mapping['Data type'] != NULL else None,
                         'comment': mapping['Comment']
                     }
                 })
