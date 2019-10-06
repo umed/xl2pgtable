@@ -59,7 +59,7 @@ def main():
 
 
 # for info in files_info:
-#     db.rewrite_data(info[TABLE_NAME], info[COLUMNS_INFO], info[ROWS])
+#     postgres.rewrite_data(info[TABLE_NAME], info[COLUMNS_INFO], info[ROWS])
 # exit(0)
 
 

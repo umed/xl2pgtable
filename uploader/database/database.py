@@ -81,7 +81,8 @@ class Database(object):
             command = "SELECT exists(SELECT 1 FROM information_schema.tables WHERE " \
                       "table_schema = '{}' AND table_name = '{}')".format(self._settings.schema, table_name)
             result = self.execute(command)
-            if len(result) > 0 and result[0]:
+            print(table_name, result)
+            if len(result) > 0 and len(result[0]) > 0 and result[0][0]:
                 self.execute('TRUNCATE {}.{}'.format(self._settings.schema, table_name))
                 self.__insert_rows(table_name, columns, data)
             else:

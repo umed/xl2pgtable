@@ -6,10 +6,10 @@ services:
     network_mode: "host"
     environment:
       - DISPLAY=10.0.75.1:0.0
-    volumes:
+    # volumes:
       # - $HOME/.Xauthority:/root/.Xauthority
       # - /tmp/.X11-unix:/tmp/.X11-unix
-      - dbeaver_home:/root
+      # - dbeaver_home:/root
   db:
     image: postgres
     ports:
