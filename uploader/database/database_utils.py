@@ -29,12 +29,18 @@ def null_or_format_str(value, str_format: str):
 
 
 def py_type_to_pg_type(py_type):
-    return PG_SQL_TYPES_TO_PYTHON_TYPES[py_type]['type']
+    return PYTHON_TYPES_TO_PG_SQL_TYPES[py_type]['type']
 
 
 def py_value_to_pg_value(value_type, value) -> str:
-    current_type = value_type['type'] if type(value_type) is dict else value_type
-    return PG_SQL_TYPES_TO_PYTHON_TYPES[current_type]['converter'](value)
+    if type(value_type) is dict:
+        if 'mapping' in value_type and value_type['mapping']['type'] is not None:
+            current_type = pg_type_to_py(value_type['mapping']['type'], value_type['type'])
+        else:
+            current_type = value_type['type']
+    else:
+        current_type = value_type
+    return PYTHON_TYPES_TO_PG_SQL_TYPES[current_type]['converter'](value)
 
 
 # def datetime_to_null_or_str_format(value, dt_format, str_format):
@@ -42,8 +48,28 @@ def py_value_to_pg_value(value_type, value) -> str:
 #     result = null_or_format_str(result, str_format)
 #     return result
 
+PG_TYPE_TO_PYTHON_TYPE = {
+    'numer': int,
+    'integ': int,
+    'real': float,
+    'times': dt.datetime,
+    'time': dt.time,
+    'date': dt.date,
+    'inter': dt.datetime,
+    'varch': str,
+    'text': str
 
-PG_SQL_TYPES_TO_PYTHON_TYPES = {
+}
+
+
+def pg_type_to_py(pg_type: str, default_type: type) -> type:
+    pg_type = pg_type.lower()[0:5]
+    if pg_type in PG_TYPE_TO_PYTHON_TYPE:
+        return PG_TYPE_TO_PYTHON_TYPE[pg_type]
+    return default_type
+
+
+PYTHON_TYPES_TO_PG_SQL_TYPES = {
     int: {
         'type': 'numeric',
         'converter': lambda value: null_or_format_str(value, '{}')
