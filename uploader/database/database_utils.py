@@ -34,7 +34,7 @@ def py_type_to_pg_type(py_type):
 
 def py_value_to_pg_value(value_type, value) -> str:
     if type(value_type) is dict:
-        if 'mapping' in value_type and value_type['mapping']['type'] is not None:
+        if 'mapping' in value_type and 'type' in value_type['mapping'] and value_type['mapping']['type'] is not None:
             current_type = pg_type_to_py(value_type['mapping']['type'], value_type['type'])
         else:
             current_type = value_type['type']
