@@ -18,12 +18,16 @@ def __absolute_path(base: str, file_path: str):
 def read_config(file_path: str) -> list:
     configs = __read_excel(file_path, COLUMNS_LIST)
     file_dir = os.path.dirname(file_path)
+    result_configs = []
     for config in configs:
+        if 'Upload' in config and config['Upload'] != 1:
+            continue
         table_name = config.get('Table name', None)
         config['Link'] = __absolute_path(file_dir, config['Link'])
         if not table_name or table_name == utils.NULL:
             config['Table name'] = create_table_name(config['Link'], config['Department name'])
-    return configs
+        result_configs.append(config)
+    return result_configs
 
 
 def __read_excel(file_path, columns_names_to_check: list) -> List[dict]:
@@ -49,6 +53,8 @@ def __get_table_columns(column_mappings: List[dict], table_name: str):
 
 def apply_column_mappings(file_path: str, configs: List[dict]):
     column_mappings = __read_excel(file_path, [])
+    #print(column_mappings)
+    #print(configs)
     for config in configs:
         table_name = config.get('Table name', None)
         if table_name:

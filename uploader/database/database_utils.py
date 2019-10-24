@@ -1,5 +1,6 @@
 import datetime as dt
 from uploader.utils import NULL
+from typing import List
 
 __ESCAPE_SYMBOLS_MAPPING = {"'": r"''"}
 
@@ -14,11 +15,37 @@ def __escaped_symbols() -> dict:
     return __escaped_symbols.translation
 
 
-def convert_datetime_to_str(value, dt_format: str) -> str:
+def time_delta_to_str(value: dt.datetime):
+    excel_start_date = dt.datetime(1899, 12, 31, 0, 0, 0)
+    delta = value - excel_start_date
+    hours = delta.days * 24 + int(delta.seconds / 3600)
+    minutes = int(delta.seconds % 3600 / 60)
+    seconds = delta.seconds % 3600 % 60
+    result = '{}:{:02d}:{:02d}'.format(hours, minutes, seconds)
+    return result
+
+
+def convert_datetime_to_str(value, to_format: str, formater_type: str) -> str:
+    if __value_empty(value):
+        return NULL
+    if formater_type == 'timedelta':
+        return time_delta_to_str(value)
     if type(value) == str:
-        return value
-    else:
-        return value.strftime(dt_format)
+        formater = FORMATERS[formater_type]
+        for format in formater['formats']:
+            try:
+                dt_value = dt.datetime.strptime(value, format)
+            except:
+                continue
+            value = formater['converter'](dt_value)
+    return value.strftime(to_format)
+
+
+# def convert_datetime_to_str(value, dt_format: str) -> str:
+#     if type(value) == str:
+#         return value
+#     else:
+#         return value.strftime(dt_format)
 
 
 def null_or_format_str(value, str_format: str):
@@ -55,7 +82,7 @@ PG_TYPE_TO_PYTHON_TYPE = {
     'times': dt.datetime,
     'time': dt.time,
     'date': dt.date,
-    'inter': dt.datetime,
+    'inter': dt.timedelta,
     'varch': str,
     'text': str
 
@@ -68,6 +95,29 @@ def pg_type_to_py(pg_type: str, default_type: type) -> type:
         return PG_TYPE_TO_PYTHON_TYPE[pg_type]
     return default_type
 
+
+FORMATERS = {
+    'date': {
+        'formats': [
+            '%d.%m.%Y',
+            '%Y-%m-%d'
+        ],
+        'converter': lambda value: value.date()
+    },
+    'time': {
+        'formats': [
+            '%H:%M:%S',
+        ],
+        'converter': lambda value: value.time()
+    },
+    'timestamp': {
+        'formats': [
+            '%d.%m.%Y %H:%M:%S',
+            '%Y-%m-%d %H:%M:%S'
+        ],
+        'converter': lambda value: value
+    }
+}
 
 PYTHON_TYPES_TO_PG_SQL_TYPES = {
     int: {
@@ -84,17 +134,30 @@ PYTHON_TYPES_TO_PG_SQL_TYPES = {
     },
     dt.time: {
         'type': 'time',
-        'converter': lambda value: null_or_format_str(convert_datetime_to_str(value, '%H:%M:%S'),
+        'converter': lambda value: null_or_format_str(convert_datetime_to_str(value,
+                                                                              '%H:%M:%S',
+                                                                              'time'),
                                                       "'{}'")
     },
     dt.datetime: {
         'type': 'timestamp',
-        'converter': lambda value: null_or_format_str(convert_datetime_to_str(value, '%d.%m.%Y %H:%M:%S'),
+        'converter': lambda value: null_or_format_str(convert_datetime_to_str(value,
+                                                                              '%d.%m.%Y %H:%M:%S',
+                                                                              'timestamp'),
                                                       "to_timestamp('{}', 'dd.mm.yyyy hh24:mi:ss')")
     },
     dt.date: {
         'type': 'date',
-        'converter': lambda value: null_or_format_str(convert_datetime_to_str(value, '%d.%m.%Y'),
+        'converter': lambda value: null_or_format_str(convert_datetime_to_str(value,
+                                                                              '%d.%m.%Y',
+                                                                              'date'),
                                                       "to_date('{}', 'dd.mm.yyyy')")
+    },
+    dt.timedelta: {
+        'type': 'interval',
+        'converter': lambda value: null_or_format_str(convert_datetime_to_str(value,
+                                                                              '%d.%m.%Y %H:%M:%S',
+                                                                              'timedelta'),
+                                                      "'{}'")
     }
 }

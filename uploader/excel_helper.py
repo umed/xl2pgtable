@@ -93,5 +93,6 @@ TYPE_CONVERTERS = {
     dt.date: lambda value: value if type(value) == dt.date else dt.datetime.strptime(value, '%d.%m.%Y').date(),
     dt.datetime: lambda value: value if type(value) == dt.datetime else dt.datetime.strptime(value,
                                                                                              '%d.%m.%Y %H:%M:%S'),
+
     str: str,
 }
