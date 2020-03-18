@@ -1,4 +1,4 @@
-pandas==0.24.2
+pandas==1.0.3
 psycopg2-binary==2.8.2
 xlrd==1.2.0
 transliterate==1.10.2
